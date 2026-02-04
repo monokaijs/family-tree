@@ -1,11 +1,10 @@
 import { View } from 'react-native';
-import { AppText } from '@/components/ui';
+import TreeView from '@/components/tree/TreeView';
 
 export default function HomeScreen() {
   return (
-    <View className={'p-safe-offset-4'}>
-      <AppText className="text-2xl font-semibold">Home</AppText>
+    <View style={{ flex: 1 }}>
+      <TreeView />
     </View>
   );
 }
-

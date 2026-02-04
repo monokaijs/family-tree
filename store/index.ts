@@ -2,6 +2,7 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import { persistReducer, persistStore } from 'redux-persist';
 import { createMMKV } from 'react-native-mmkv';
 import appSlice from './slices/appSlice';
+import familyTreeSlice from './slices/familyTreeSlice';
 import autoMergeLevel2 from 'redux-persist/lib/stateReconciler/autoMergeLevel2';
 
 export const storage = createMMKV();
@@ -22,16 +23,16 @@ const reduxStorage = {
   },
 };
 
-// Combine reducers
 const rootReducer = combineReducers({
   app: appSlice,
+  familyTree: familyTreeSlice,
 });
 
 const persistedReducer = persistReducer(
   {
     key: 'root',
     storage: reduxStorage,
-    whitelist: ['app'],
+    whitelist: ['app', 'familyTree'],
     stateReconciler: autoMergeLevel2 as any,
   },
   rootReducer

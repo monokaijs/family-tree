@@ -1,26 +1,26 @@
 import React from 'react';
-import {Text, TextProps} from 'react-native';
-import {cn} from '@/utils';
-import {cva} from 'class-variance-authority';
-import {useTranslation} from "react-i18next";
+import { Text, TextProps } from 'react-native';
+import { cn } from '@/utils';
+import { cva } from 'class-variance-authority';
+import { useTranslation } from "react-i18next";
 
 interface AppTextProps extends TextProps {
   variant?:
-    | 'display1'
-    | 'display2'
-    | 'display3'
-    | 'heading1'
-    | 'heading2'
-    | 'heading3'
-    | 'heading4'
-    | 'heading5'
-    | 'body'
-    | 'bodyLarge'
-    | 'bodySmall'
-    | 'caption'
-    | 'overline'
-    | 'label'
-    | 'labelSmall';
+  | 'display1'
+  | 'display2'
+  | 'display3'
+  | 'heading1'
+  | 'heading2'
+  | 'heading3'
+  | 'heading4'
+  | 'heading5'
+  | 'body'
+  | 'bodyLarge'
+  | 'bodySmall'
+  | 'caption'
+  | 'overline'
+  | 'label'
+  | 'labelSmall';
   weight?: 'regular' | 'medium' | 'semibold' | 'bold';
   color?: 'default' | 'primary' | 'secondary' | 'muted' | 'success' | 'warning' | 'error';
   align?: 'left' | 'center' | 'right';
@@ -81,16 +81,16 @@ const textVariants = cva(
 );
 
 export default function AppText({
-                                  variant = 'body',
-                                  weight,
-                                  color = 'default',
-                                  align = 'left',
-                                  children,
-                                  className,
-                                  ...props
-                                }: AppTextProps) {
-  const {t} = useTranslation();
-  let computedClassName = textVariants({variant, weight, color, align});
+  variant = 'body',
+  weight,
+  color = 'default',
+  align = 'left',
+  children,
+  className,
+  ...props
+}: AppTextProps) {
+  const { t } = useTranslation();
+  let computedClassName = textVariants({ variant, weight, color, align });
   if (!props.raw && typeof children === 'string') {
     children = t((children as string).toString().trim());
   }
@@ -106,11 +106,27 @@ export default function AppText({
       computedClassName = cn(computedClassName, 'font-sans-semibold');
     }
   }
+  const getFontFamily = () => {
+    if (weight === 'bold') return 'SourceSans3_700Bold';
+    if (weight === 'semibold') return 'SourceSans3_600SemiBold';
+    if (weight === 'medium') return 'SourceSans3_500Medium';
+    if (['display1', 'display2', 'display3', 'heading1', 'heading2', 'heading3', 'heading4', 'heading5'].includes(variant)) {
+      return 'SourceSans3_700Bold';
+    }
+    if (['label', 'labelSmall'].includes(variant)) {
+      return 'SourceSans3_500Medium';
+    }
+    if (variant === 'overline') {
+      return 'SourceSans3_600SemiBold';
+    }
+    return 'SourceSans3_400Regular';
+  };
 
   return (
     <Text
       {...props}
       className={cn(computedClassName, className)}
+      style={[{ fontFamily: getFontFamily() }, props.style]}
     >
       {children}
     </Text>

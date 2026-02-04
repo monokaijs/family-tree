@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useColors } from '@/hooks/useColors.ts';
-import { Home, Menu } from 'lucide-react-native';
+import { Map, List, Menu } from 'lucide-react-native';
 import { AppText } from '@/components/ui';
 import { useTranslation } from 'react-i18next';
 
@@ -15,11 +15,13 @@ interface TabIconProps {
 const TabIcon: React.FC<TabIconProps> = ({ name, color, size }) => {
   switch (name) {
     case 'home':
-      return <Home size={size} color={color} fill={color} />;
+      return <Map size={size} color={color} />;
+    case 'tree':
+      return <List size={size} color={color} />;
     case 'more':
-      return <Menu size={size} color={color} fill={color} />;
+      return <Menu size={size} color={color} />;
     default:
-      return <Home size={size} color={color} fill={color} />;
+      return <Map size={size} color={color} />;
   }
 };
 

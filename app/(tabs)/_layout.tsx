@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router';
 import CustomTabBar from '@/components/navigation/CustomTabBar';
-import CustomScreenHeader from '@/components/navigation/ScreenHeader';
 
 export default function TabsLayout() {
   return (
@@ -13,8 +12,8 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
-          tabBarLabel: 'HOME',
+          title: 'Map',
+          tabBarLabel: 'MAP',
         }}
       />
       <Tabs.Screen
@@ -27,4 +26,3 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
-

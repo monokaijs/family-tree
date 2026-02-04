@@ -20,15 +20,10 @@ export const presets = [require('nativewind/preset')];
 export const theme = {
   extend: {
     fontFamily: {
-      'sans-thin': ['"SourceSans3-Thin"'],
-      'sans-extralight': ['"SourceSans3-ExtraLight"'],
-      'sans-light': ['"SourceSans3-Light"'],
-      'sans-regular': ['"SourceSans3-Regular"'],
-      'sans-medium': ['"SourceSans3-Medium"'],
-      'sans-semibold': ['"SourceSans3-SemiBold"'],
-      'sans-bold': ['"SourceSans3-Bold"'],
-      'sans-extrabold': ['"SourceSans3-ExtraBold"'],
-      'sans-black': ['"SourceSans3-Black"'],
+      'sans-regular': ['SourceSans3_400Regular'],
+      'sans-medium': ['SourceSans3_500Medium'],
+      'sans-semibold': ['SourceSans3_600SemiBold'],
+      'sans-bold': ['SourceSans3_700Bold'],
     },
     fontSize: {
       xs: 12,

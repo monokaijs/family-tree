@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "my-expo-app",
-    "slug": "my-expo-app",
+    "name": "kintree",
+    "slug": "kintree",
     "version": "1.0.0",
-    "scheme": "myexpoapp",
+    "scheme": "kintree",
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
@@ -14,7 +14,16 @@
     "plugins": [
       "expo-router",
       "expo-localization",
-      "react-native-localize"
+      "react-native-localize",
+      "expo-font",
+      [
+        "./utils/withCiScript",
+        {
+          "sourceScriptPath": "./assets/ios/ci_scripts/ci_post_clone.sh",
+          "destFileName": "ci_post_clone.sh",
+          "makeExecutable": true
+        }
+      ]
     ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -29,14 +38,24 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.myexpoapp"
+      "bundleIdentifier": "dev.creaton.kintree",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification",
+          "fetch"
+        ]
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "appleTeamId": "V59Z6S9A36"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.myexpoapp"
+      "package": "dev.creaton.kintree"
     }
   }
 }
