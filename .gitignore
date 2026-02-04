@@ -13,7 +13,14 @@ web-build/
 
 
 
-ios
+# ignore everything in ios
+/ios/**
+
+# but keep ci scripts
+!/ios/ci_scripts/
+!/ios/ci_scripts/**
+!assets/ios/**
+!assets/android
 android
 
 # macOS
@@ -24,3 +31,5 @@ android
 
 # IDE files
 .idea
+
+.yarn/cache

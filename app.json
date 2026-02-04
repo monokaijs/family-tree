@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "kintree",
-    "slug": "kintree",
+    "name": "Kintree",
+    "slug": "Kintree",
     "version": "1.0.0",
-    "scheme": "kintree",
+    "scheme": "Kintree",
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
