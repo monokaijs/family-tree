@@ -1,5 +1,5 @@
 import { Person, Relationship } from '@/store/slices/familyTreeSlice';
-import calcTree from 'relatives-tree';
+import calcTree from '@/lib/relatives-tree';
 
 const NODE_WIDTH = 160;
 const NODE_HEIGHT = 180;
@@ -8,9 +8,7 @@ const AVATAR_SIZE = 72;
 const VISUAL_NODE_HEIGHT = 120;
 const CONNECTOR_Y_OFFSET = -(VISUAL_NODE_HEIGHT / 2) + (AVATAR_SIZE / 2);
 
-// Scaling factors: relatives-tree uses a coordinate system where
-// the fundamental unit is typically half the node width/height.
-const CANVAS_HALF_WIDTH = 1500; // Offset to start drawing
+const CANVAS_HALF_WIDTH = 1500;
 const CANVAS_HALF_HEIGHT = 1500;
 
 interface Relation {
@@ -35,16 +33,12 @@ interface ExtNode {
 
 type Connector = readonly [number, number, number, number];
 
-/**
- * Convert app types to relatives-tree expects structure
- */
 function convertToRelativesTreeNodes(
   persons: Person[],
   relationships: Relationship[]
 ): TreeNode[] {
   const nodeMap = new Map<string, TreeNode>();
 
-  // 1. Initialize all nodes
   persons.forEach((p) => {
     nodeMap.set(p.id, {
       id: p.id,
@@ -56,7 +50,6 @@ function convertToRelativesTreeNodes(
     });
   });
 
-  // 2. Populate relationships
   relationships.forEach((rel) => {
     const from = nodeMap.get(rel.fromPersonId);
     const to = nodeMap.get(rel.toPersonId);
@@ -64,20 +57,16 @@ function convertToRelativesTreeNodes(
 
     switch (rel.type) {
       case 'spouse':
-        // Add to both sides
         if (!from.spouses.some(r => r.id === to.id)) from.spouses.push({ id: to.id, type: 'married' });
         if (!to.spouses.some(r => r.id === from.id)) to.spouses.push({ id: from.id, type: 'married' });
         break;
 
       case 'child':
-        // 'child' means: FROM is parent, TO is child (based on usage in previous steps)
-        // Let's assume standard direction: Person A (from) has child Person B (to)
         if (!from.children.some(r => r.id === to.id)) from.children.push({ id: to.id, type: 'blood' });
         if (!to.parents.some(r => r.id === from.id)) to.parents.push({ id: from.id, type: 'blood' });
         break;
 
       case 'parent':
-        // 'parent' means: FROM is child, TO is parent
         if (!from.parents.some(r => r.id === to.id)) from.parents.push({ id: to.id, type: 'blood' });
         if (!to.children.some(r => r.id === from.id)) to.children.push({ id: from.id, type: 'blood' });
         break;
@@ -93,14 +82,8 @@ function convertToRelativesTreeNodes(
 }
 
 function findBestRoot(nodes: TreeNode[]): string {
-  // Candidate roots: check ALL nodes to find the optimal root for hourglass graphs
   const candidates = nodes;
   if (candidates.length === 0) return nodes[0]?.id || '';
-  // if (candidates.length === 1) return candidates[0].id; // Don't optimize single candidate early if we assume candidates=nodes
-
-  // Heuristic: Run calcTree on all candidates and pick the one with max nodes
-  // This is expensive but necessary to guarantee we show the "Main" tree.
-  // Optimization: limit to top 10 candidates if needed, but for <500 nodes it's fine.
 
   let bestRoot = candidates[0].id;
   let maxCount = -1;
@@ -112,7 +95,6 @@ function findBestRoot(nodes: TreeNode[]): string {
         maxCount = tree.nodes.length;
         bestRoot = cand.id;
       }
-      // If we cover everyone, stop early
       if (maxCount === nodes.length) break;
     } catch (e) {
       continue;
@@ -122,7 +104,6 @@ function findBestRoot(nodes: TreeNode[]): string {
   return bestRoot;
 }
 
-// Cache last calculation to avoid re-running expensive graph logic twice
 let layoutCache: {
   key: string;
   nodes: ExtNode[];
@@ -130,7 +111,9 @@ let layoutCache: {
 } | null = null;
 
 function getCalculatedData(persons: Person[], relationships: Relationship[]) {
-  const key = `${persons.length}-${relationships.length}`;
+  const personIds = persons.map(p => p.id).sort().join(',');
+  const relIds = relationships.map(r => `${r.id}:${r.fromPersonId}-${r.toPersonId}:${r.type}`).sort().join('|');
+  const key = `${personIds}::${relIds}`;
   if (layoutCache && layoutCache.key === key) {
     return layoutCache;
   }
@@ -139,7 +122,6 @@ function getCalculatedData(persons: Person[], relationships: Relationship[]) {
   if (nodes.length === 0) return { key, nodes: [], connectors: [] };
 
   const rootId = findBestRoot(nodes);
-
   const tree = calcTree(nodes as any, { rootId });
 
   const result = {
@@ -152,8 +134,6 @@ function getCalculatedData(persons: Person[], relationships: Relationship[]) {
   return result;
 }
 
-// Scaling: Based on React Web implementation where width/height are halved.
-// The library seems to output grid units where 1 unit = Half Node Dimension.
 const X_FACTOR = NODE_WIDTH / 2;
 const Y_FACTOR = NODE_HEIGHT / 2;
 
@@ -171,23 +151,6 @@ export function calculateTreeLayout(
     });
   });
 
-  // Handle unconnected nodes
-  // const calculatedIds = new Set(nodes.map(n => n.id));
-  // let orphanOffset = 0;
-  //
-  // let maxX = 0;
-  // nodes.forEach(n => { maxX = Math.max(maxX, n.left * X_FACTOR); });
-  //
-  // persons.forEach(p => {
-  //   if (!calculatedIds.has(p.id)) {
-  //     positions.set(p.id, {
-  //       x: maxX + (NODE_WIDTH * 2) + orphanOffset + CANVAS_HALF_WIDTH,
-  //       y: CANVAS_HALF_HEIGHT
-  //     });
-  //     orphanOffset += NODE_WIDTH * 1.5;
-  //   }
-  // });
-
   return positions;
 }
 
@@ -197,9 +160,32 @@ export function getTreeConnectors(
 ): Connector[] {
   const { connectors } = getCalculatedData(persons, relationships);
 
-  // Return raw points scaled by half-dimensions
-  // The React example suggests the output [x1, y1, x2, y2] are in grid units.
   return connectors.map(c => [
+    c[0] * X_FACTOR + CANVAS_HALF_WIDTH,
+    c[1] * Y_FACTOR + CANVAS_HALF_HEIGHT + CONNECTOR_Y_OFFSET,
+    c[2] * X_FACTOR + CANVAS_HALF_WIDTH,
+    c[3] * Y_FACTOR + CANVAS_HALF_HEIGHT + CONNECTOR_Y_OFFSET,
+  ]);
+}
+
+export function calculateTreeLayoutFromRaw(nodes: TreeNode[], rootId: string): Map<string, { x: number; y: number }> {
+  const tree = calcTree(nodes as any, { rootId });
+  const positions = new Map<string, { x: number; y: number }>();
+
+  tree.nodes.forEach((node: any) => {
+    positions.set(node.id, {
+      x: (node.left * X_FACTOR) + X_FACTOR + CANVAS_HALF_WIDTH,
+      y: (node.top * Y_FACTOR) + Y_FACTOR + CANVAS_HALF_HEIGHT,
+    });
+  });
+
+  return positions;
+}
+
+export function getTreeConnectorsFromRaw(nodes: TreeNode[], rootId: string): Connector[] {
+  const tree = calcTree(nodes as any, { rootId });
+
+  return tree.connectors.map((c: Connector) => [
     c[0] * X_FACTOR + CANVAS_HALF_WIDTH,
     c[1] * Y_FACTOR + CANVAS_HALF_HEIGHT + CONNECTOR_Y_OFFSET,
     c[2] * X_FACTOR + CANVAS_HALF_WIDTH,
